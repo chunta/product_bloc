@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'dart:math' as math show Random;
 
 @immutable
 abstract class ProductEvent extends Equatable {
@@ -49,7 +48,7 @@ class ProductErrorState extends ProductState {
   List<Object> get props => [error];
 }
 
-class Repository {
+class ProductRepository {
   Future<List<Product>> getProducts() async {
     await Future.delayed(const Duration(seconds: 2));
     return const [
@@ -60,7 +59,7 @@ class Repository {
 }
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
-  final Repository _repository = Repository();
+  final ProductRepository _repository = ProductRepository();
 
   ProductBloc() : super(ProductInitState()) {
     on<ProductInitEvent>((event, emit) async {
@@ -83,15 +82,15 @@ void main() {
         create: (context) => ProductBloc(),
         child: Scaffold(
           appBar: AppBar(title: const Text('Bloc Example')),
-          body: const MyAppTest()
+          body: const ProductApp()
         ),
       ),
     ),
   );
 }
 
-class MyAppTest extends StatelessWidget {
-  const MyAppTest({Key? key}) : super(key: key);
+class ProductApp extends StatelessWidget {
+  const ProductApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -112,74 +111,6 @@ class MyAppTest extends StatelessWidget {
           return Text((state as ProductErrorState).error);
         }
       },
-    );
-  }
-}
-
-const names = [
-  'Foo',
-  'Bar',
-  'Baz',
-];
-
-extension RandomElement<T> on Iterable<T> {
-  T getRandomElement() => elementAt(math.Random().nextInt(length));
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  late final StreamController<String> stream;
-
-  @override
-  void initState() {
-    super.initState();
-    stream = StreamController<String>();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    print("(60) build");
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home Page'),
-      ),
-      body: StreamBuilder<String?>(
-        stream: stream.stream,
-        builder: (context, snapshot) {
-          final button = TextButton(
-            onPressed: () {
-              stream.add(names.getRandomElement());
-            },
-            child: const Text('Pick a random name'),
-          );
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-              return button;
-            case ConnectionState.waiting:
-              return button;
-            case ConnectionState.active:
-              return Column(
-                children: [
-                  Text(snapshot.data ?? ''),
-                  button,
-                ],
-              );
-            case ConnectionState.done:
-              return const SizedBox();
-          }
-        },
-      ),
     );
   }
 }
